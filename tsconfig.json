@@ -26,6 +26,9 @@
       ],
       "@app/data-table/page": [
         "./src/app/data-table/page/data-table-page/data-table-page.component.ts"
+      ],
+      "@app/data-table/service": [
+        "./src/app/data-table/service/data-table.service.ts"
       ]
     }
   },
