@@ -1,151 +1,57 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 
-const material = [MatTableModule, MatPaginatorModule];
+import { Item } from '@app/data-table/common';
+import { DataTableService } from '@app/data-table/service';
+
+const material = [MatTableModule, MatPaginatorModule, MatInputModule];
 
 @Component({
   selector: 'app-data-table-page',
   standalone: true,
-  imports: [...material],
+  imports: [CommonModule, ReactiveFormsModule, ...material],
+  providers: [DataTableService],
   templateUrl: './data-table-page.component.html',
   styleUrl: './data-table-page.component.scss',
 })
-export class DataTablePageComponent {
+export class DataTablePageComponent implements OnInit, OnDestroy {
+  private readonly $destroy = new Subject<boolean>();
+
   displayedColumns: string[] = ['id', 'name', 'category', 'price'];
-  dataSource = [
-    {
-      id: 1,
-      name: 'Terry Mohr III',
-      price: '770.00',
-      category: 'Licensed Metal Cheese',
-    },
-    {
-      id: 2,
-      name: 'Oliver Stracke',
-      price: '761.00',
-      category: 'Practical Metal Mouse',
-    },
-    {
-      id: 3,
-      name: 'Dr. Douglas Buckridge',
-      price: '330.00',
-      category: 'Small Bronze Pizza',
-    },
-    {
-      id: 4,
-      name: 'Ramiro Goyette Jr.',
-      price: '185.00',
-      category: 'Electronic Rubber Shoes',
-    },
-    {
-      id: 5,
-      name: 'Myra Kuphal',
-      price: '921.00',
-      category: 'Licensed Concrete Soap',
-    },
-    {
-      id: 6,
-      name: 'Mathew Jakubowski',
-      price: '514.00',
-      category: 'Tasty Metal Pants',
-    },
-    {
-      id: 7,
-      name: 'Hubert Barrows',
-      price: '643.00',
-      category: 'Bespoke Frozen Fish',
-    },
-    {
-      id: 8,
-      name: 'Erica Wehner-Doyle',
-      price: '159.00',
-      category: 'Elegant Rubber Bike',
-    },
-    {
-      id: 9,
-      name: 'Sophie Waters',
-      price: '651.00',
-      category: 'Licensed Plastic Tuna',
-    },
-    {
-      id: 10,
-      name: 'Andre Kerluke',
-      price: '879.00',
-      category: 'Licensed Fresh Chicken',
-    },
-    {
-      id: 11,
-      name: 'Johnathan McKenzie',
-      price: '464.00',
-      category: 'Handmade Rubber Cheese',
-    },
-    {
-      id: 12,
-      name: 'Sharon Sporer',
-      price: '927.00',
-      category: 'Sleek Frozen Bacon',
-    },
-    {
-      id: 13,
-      name: 'Damon Konopelski',
-      price: '334.00',
-      category: 'Fantastic Rubber Gloves',
-    },
-    {
-      id: 14,
-      name: 'Mr. Jacob Stracke',
-      price: '507.00',
-      category: 'Handcrafted Granite Chair',
-    },
-    {
-      id: 15,
-      name: 'Ashley Feil',
-      price: '350.00',
-      category: 'Refined Granite Shirt',
-    },
-    {
-      id: 16,
-      name: 'Mr. Louis Langosh DVM',
-      price: '179.00',
-      category: 'Handcrafted Cotton Table',
-    },
-    {
-      id: 17,
-      name: 'Dr. Terri Lang',
-      price: '278.00',
-      category: 'Handmade Wooden Pizza',
-    },
-    {
-      id: 18,
-      name: 'Jaime Deckow III',
-      price: '587.00',
-      category: 'Small Wooden Sausages',
-    },
-    {
-      id: 19,
-      name: 'Orville Schamberger',
-      price: '270.00',
-      category: 'Electronic Fresh Chips',
-    },
-    {
-      id: 20,
-      name: 'Patricia Padberg',
-      price: '742.00',
-      category: 'Ergonomic Wooden Computer',
-    },
-  ];
+  dataSource = new MatTableDataSource<Item, MatPaginator>([]);
 
-  dataLength = this.dataSource.length;
-  currentPage = 0;
+  pageSize = 10;
 
-  handlePageEvent(event: PageEvent): void {
-    this.currentPage = event.pageIndex;
+  filter = new FormControl('');
+
+  @ViewChild('paginator') paginator!: MatPaginator;
+
+  constructor(private dataTableService: DataTableService) {}
+
+  ngOnInit(): void {
+    this.dataTableService.$data
+      .pipe(takeUntil(this.$destroy))
+      .subscribe((data) => {
+        this.dataSource = new MatTableDataSource(data);
+        this.dataSource.paginator = this.paginator;
+      });
+
+    this.filter.valueChanges
+      .pipe(takeUntil(this.$destroy))
+      .subscribe((value) => {
+        const filter = value ?? '';
+        this.dataSource.filter = filter.trim().toLowerCase();
+      });
   }
 
-  getDataByPage(page = this.currentPage, pageSize = 10) {
-    const start = page * pageSize;
-    return this.dataSource.slice(start, start + pageSize);
+  ngOnDestroy(): void {
+    this.$destroy.next(true);
+    this.$destroy.complete();
   }
 }

@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatPaginatorHarness } from '@angular/material/paginator/testing';
+import { HttpClientModule } from '@angular/common/http';
 import { HarnessLoader } from '@angular/cdk/testing';
+import { MatPaginatorHarness } from '@angular/material/paginator/testing';
 
 import { DataTablePageComponent } from './data-table-page.component';
 
@@ -14,13 +15,13 @@ describe('DataTablePageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataTablePageComponent, NoopAnimationsModule],
+      imports: [DataTablePageComponent, NoopAnimationsModule, HttpClientModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DataTablePageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-    
+
     loader = TestbedHarnessEnvironment.loader(fixture);
     instance = fixture.componentInstance;
   });
@@ -37,10 +38,10 @@ describe('DataTablePageComponent', () => {
   it('should be able to navigate between pages', async () => {
     const paginator = await loader.getHarness(MatPaginatorHarness);
 
-    expect(instance.currentPage).toBe(0);
+    expect(instance.paginator.pageIndex).toBe(0);
     await paginator.goToNextPage();
-    expect(instance.currentPage).toBe(1);
+    expect(instance.paginator.pageIndex).toBe(1);
     await paginator.goToPreviousPage();
-    expect(instance.currentPage).toBe(0);
+    expect(instance.paginator.pageIndex).toBe(0);
   });
 });
