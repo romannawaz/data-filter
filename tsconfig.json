@@ -21,6 +21,9 @@
     "useDefineForClassFields": false,
     "lib": ["ES2022", "dom"],
     "paths": {
+      "@app/data-table/common": [
+        "./src/app/data-table/common/data-table.interface.ts"
+      ],
       "@app/data-table/page": [
         "./src/app/data-table/page/data-table-page/data-table-page.component.ts"
       ]
